@@ -24,7 +24,7 @@ def load_data(ticker):
     return data
 
 # Streamlit App Layout
-st.title("Real-Time Stock Price Prediction")
+st.title("Stock Price Prediction")
 
 # User input for ticker symbol
 ticker = st.text_input("Enter Stock Ticker (e.g., AAPL)", "AAPL")
@@ -65,11 +65,17 @@ if ticker:
     st.write(f"**Test MAE:** {mae:.2f}")
     st.write(f"**R-squared:** {r2:.4f}")
     
+    direction_actual = np.sign(y_test.values - X_test['Close'].values)
+    direction_pred = np.sign(y_pred - X_test['Close'].values)
+    direction_accuracy = np.mean(direction_actual == direction_pred)
+    st.write(f"**Directional Accuracy:** {direction_accuracy * 100:.2f}%")
+
     # Plot Actual vs. Predicted Prices
     st.subheader("Actual vs. Predicted Prices")
     fig, ax = plt.subplots(figsize=(10,5))
     ax.plot(y_test.index, y_test, label="Actual Price", color="blue")
     ax.plot(y_test.index, y_pred, label="Predicted Price", color="red")
+    ax.set_title(f"{ticker} Stock Price Prediction using XGBoost")
     ax.set_xlabel("Date")
     ax.set_ylabel("Price")
     ax.legend()

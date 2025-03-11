@@ -33,15 +33,27 @@ ticker = st.text_input("Enter Stock Ticker (e.g., AAPL)", "AAPL")
 
 if ticker:
     # Load data until today
-    data = load_data(ticker)
+    today = datetime.datetime.now()
+
+    start_date = today - datetime.timedelta(days=5*365)
+    # Download data from 2018-01-01 until today
+    data = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"), end=today.strftime("%Y-%m-%d"))
     
+    # Feature Engineering: Calculate moving averages
+    data['MA5'] = data['Close'].rolling(window=5).mean()
+    data['MA10'] = data['Close'].rolling(window=10).mean()
+    data['MA20'] = data['Close'].rolling(window=20).mean()
+    data['Target'] = data['Close'].shift(-1)
+    
+    data_train = data.dropna().copy()
+
     # Define features and target variable
     features = ['Open', 'High', 'Low', 'Close', 'Volume', 'MA5', 'MA10', 'MA20']
-    X = data[features]
-    y = data['Target']
+    X = data_train[features]
+    y = data_train['Target']
     
     # Split data (80% training, 20% testing) preserving time order
-    split_index = int(len(data) * 0.8)
+    split_index = int(len(data_train) * 0.8)
     X_train = X.iloc[:split_index]
     X_test = X.iloc[split_index:]
     y_train = y.iloc[:split_index]
@@ -84,7 +96,14 @@ if ticker:
     st.pyplot(fig)
     
     # Predict next day closing price using the latest available data
-    last_row = X.tail(1)
-    next_day_pred = model.predict(last_row)
+    raw_data = data.copy()
+    raw_data = raw_data[raw_data['Close'].notna()]
+
+    prediction_features = raw_data.iloc[-1][features]
+
+    # Convert to DataFrame for prediction
+    prediction_features = prediction_features.to_frame().T
+    next_day_pred = model.predict(prediction_features)
+
     st.subheader("Next Day Prediction")
     st.write(f"Next day predicted closing price: **{next_day_pred[0]:.2f}**")

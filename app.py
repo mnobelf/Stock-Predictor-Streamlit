@@ -9,11 +9,11 @@ import datetime
 
 def load_data(ticker):
     # Use today's date as the end date for downloading data
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    today = datetime.datetime.now()
 
     start_date = today - datetime.timedelta(days=5*365)
     # Download data from 2018-01-01 until today
-    data = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"), end=today)
+    data = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"), end=today.strftime("%Y-%m-%d"))
     
     # Feature Engineering: Calculate moving averages
     data['MA5'] = data['Close'].rolling(window=5).mean()

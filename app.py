@@ -97,11 +97,10 @@ if ticker:
     
     # Predict next day closing price using the latest available data
     raw_data = data.copy()
-    raw_data = raw_data[raw_data['Close'].notna()]
-
-    prediction_features = raw_data.iloc[-1][features]
-
-    # Convert to DataFrame for prediction
+    if pd.isna(raw_data.iloc[-1]['Close'].values[0]):
+        prediction_features = raw_data.iloc[-2][features]
+    else:
+        prediction_features = raw_data.iloc[-1][features]
     prediction_features = prediction_features.to_frame().T
     next_day_pred = model.predict(prediction_features)
 

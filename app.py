@@ -29,13 +29,13 @@ def load_data(ticker):
 st.title("Stock Price Prediction")
 
 # User input for ticker symbol
-ticker = st.text_input("Enter Stock Ticker (e.g., AAPL)", "AAPL")
+ticker = st.text_input("Enter Stock Ticker (e.g., BBCA.JK)", "BBCA.JK")
 
 if ticker:
     # Load data until today
     today = datetime.datetime.now()
 
-    start_date = today - datetime.timedelta(days=5*365)
+    start_date = today - datetime.timedelta(days=3*365)
     # Download data from 2018-01-01 until today
     data = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"), end=today.strftime("%Y-%m-%d"))
     

@@ -107,5 +107,6 @@ if ticker:
     next_date = last_date + pd.Timedelta(days=1)
     prediction_features = prediction_features[features].to_frame().T
 
+    next_day_pred = model.predict(prediction_features)
     st.subheader("Next Day Prediction")
     st.write(f"{next_date.strftime('%Y-%m-%d')} predicted closing price: {next_day_pred[0]:.2f}")

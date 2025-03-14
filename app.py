@@ -96,7 +96,6 @@ if ticker:
     st.pyplot(fig)
     
     # Predict next day closing price using the latest available data
-    # Predict next day closing price using the latest available data
     raw_data = data.copy()
     if pd.isna(raw_data.iloc[-1]['Close'].values[0]):
         prediction_features = raw_data.iloc[-2]
@@ -109,4 +108,6 @@ if ticker:
 
     next_day_pred = model.predict(prediction_features)
     st.subheader("Next Day Prediction")
+    direction_next_pred = np.sign(next_day_pred[0] - prediction_features['Close'].values[0][0])
+    st.write(f"{next_date.strftime('%Y-%m-%d')} Predicted direction : " + "Up" if direction_next_pred == 1 else "Down")
     st.write(f"{next_date.strftime('%Y-%m-%d')} predicted closing price: {next_day_pred[0]:.2f}")

@@ -26,12 +26,12 @@ def load_data(ticker):
     weekly_data['MA5'] = weekly_data['Close'].rolling(window=5).mean()
     weekly_data['MA10'] = weekly_data['Close'].rolling(window=10).mean()
     weekly_data['MA20'] = weekly_data['Close'].rolling(window=20).mean()
-    
+    last = weekly_data.iloc[-1]
+
     # Create Target: Next week's closing price
     weekly_data['Target'] = weekly_data['Close'].shift(-1)
     weekly_data.dropna(inplace=True)
-    
-    return weekly_data
+    return weekly_data, last
 
 # Streamlit App Layout
 st.title("Weekly Stock Price Prediction")
@@ -42,7 +42,7 @@ ticker = st.text_input("Enter Stock Ticker (e.g., BBCA.JK)", "BBCA.JK")
 if ticker:
     try:
         # Load weekly data
-        data = load_data(ticker)
+        data, last = load_data(ticker)
         
         # Feature Engineering
         features = ['Open', 'High', 'Low', 'Close', 'Volume', 'MA5', 'MA10', 'MA20']
@@ -113,7 +113,7 @@ if ticker:
         st.pyplot(fig)
         
         # Predict next week closing price using the latest available data
-        latest_week = data.iloc[-1]
+        latest_week = last
         next_week_date = latest_week.name + pd.Timedelta(weeks=1)
         
         # Prepare features for prediction

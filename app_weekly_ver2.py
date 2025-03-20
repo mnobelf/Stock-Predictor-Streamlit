@@ -13,13 +13,21 @@ def load_data(ticker):
 
     start_date = today - datetime.timedelta(days=10*365)
     # Download data from 5 years ago until today
-    data = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"), end=today.strftime("%Y-%m-%d"))
+    data = yf.download(ticker, start=start_date.strftime("%Y-%m-%d"), end=today.strftime("%Y-%m-%d"), group_by=f"'{ticker}'")
     
     if data.empty:
         raise ValueError(f"No data found for ticker '{ticker}'. Please check the ticker symbol and try again.")
     
-    # Resample to weekly data (using Friday's closing price)
-    weekly_data = data.resample('W-FRI').last()
+    data = data[ticker]
+
+    # Resample to weekly data with proper aggregation:
+    weekly_data = data.resample('W-FRI').agg({
+        'Open': 'first',    # Monday's open (or first available)
+        'High': 'max',      # Highest price in the week
+        'Low': 'min',       # Lowest price in the week
+        'Close': 'last',    # Friday's close (or last available)
+        'Volume': 'sum'     # Total volume for the week
+    })
     weekly_data = weekly_data.ffill()  # Forward fill missing values
     
     # Feature Engineering: Calculate weekly moving averages
@@ -125,7 +133,7 @@ if ticker:
         
         next_week_pred = model.predict(prediction_features)
         st.subheader("Next Week Prediction")
-        direction_next_pred = np.sign(next_week_pred[0] - prediction_features['Close'].values[0][0])
+        direction_next_pred = np.sign(next_week_pred[0] - prediction_features['Close'].values[0])
         st.write(f"Week ending {next_week_date.strftime('%Y-%m-%d')} Predicted direction : " + 
                 "Up" if direction_next_pred == 1 else "Down")
         st.write(f"Week ending {next_week_date.strftime('%Y-%m-%d')} predicted closing price: {next_week_pred[0]:.2f}")

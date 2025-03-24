@@ -37,7 +37,7 @@ def load_data(ticker):
 st.title("Weekly Stock Price Prediction")
 
 # User input for ticker symbol
-ticker = st.text_input("Enter Stock Ticker (e.g., BBCA.JK)", "BBCA.JK")
+ticker = st.text_input("Enter Stock Ticker (e.g., BMRI.JK)", "BMRI.JK")
 
 if ticker:
     try:

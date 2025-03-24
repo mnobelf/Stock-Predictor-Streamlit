@@ -2,7 +2,7 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import numpy as np
-from xgboost import XGBRegressor
+from sklearn.neural_network import MLPRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 import datetime
@@ -34,16 +34,6 @@ def load_data(ticker):
     weekly_data['MA5'] = weekly_data['Close'].rolling(window=5).mean()
     weekly_data['MA10'] = weekly_data['Close'].rolling(window=10).mean()
     weekly_data['MA20'] = weekly_data['Close'].rolling(window=20).mean()
-
-    # Calculate RSI (Relative Strength Index) with a 14-period window
-    delta = weekly_data['Close'].diff()
-    gain = delta.clip(lower=0)
-    loss = -delta.clip(upper=0)
-    window_length = 14
-    avg_gain = gain.rolling(window=window_length, min_periods=window_length).mean()
-    avg_loss = loss.rolling(window=window_length, min_periods=window_length).mean()
-    rs = avg_gain / avg_loss
-    weekly_data['RSI'] = 100 - (100 / (1 + rs))
 
     # Create Target: Next week's closing price
     weekly_data['Target'] = weekly_data['Close'].shift(-1)
@@ -84,17 +74,13 @@ if ticker:
         #                      learning_rate=0.1,
         #                      random_state=42)
 
-        # Modified model with regularization parameters
-        model = XGBRegressor(
-            objective='reg:squarederror',
-            n_estimators=100,
-            learning_rate=0.05,  # Reduced learning rate
-            max_depth=5,         # Reduced tree depth
-            subsample=0.8,       # Subsample ratio of training data
-            colsample_bytree=0.8,# Subsample ratio of columns
-            gamma=0.1,           # Minimum loss reduction required
-            reg_alpha=0.1,       # L1 regularization term
-            reg_lambda=0.1,      # L2 regularization term
+        # Use MLPRegressor as an alternative model
+        model = MLPRegressor(
+            hidden_layer_sizes=(50, 50),  # Two hidden layers with 50 neurons each
+            activation='relu',
+            solver='adam',
+            learning_rate_init=0.001,
+            max_iter=500,
             random_state=42
         )
 
@@ -128,7 +114,7 @@ if ticker:
 
         ax.plot(y_test.index, y_test, label="Actual Next Week Price", color="blue")
         ax.plot(y_test.index, y_pred, label="Predicted Next Week Price", color="red")
-        ax.set_title(f"Weekly {ticker} Stock Price Prediction using XGBoost")
+        ax.set_title(f"Weekly {ticker} Stock Price Prediction")
         ax.set_xlabel("Date")
         ax.set_ylabel("Price")
         ax.legend()
